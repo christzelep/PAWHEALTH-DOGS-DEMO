@@ -1461,38 +1461,69 @@
         // Initialize demo functionality
         document.addEventListener('DOMContentLoaded', function() {
             // PWA Installation
-            let deferredPrompt;
-            const installBtn = document.getElementById('installBtn');
-            
-            // Αρχικά κρύψε το κουμπί
-            installBtn.style.display = 'none';
-            
-            window.addEventListener('beforeinstallprompt', (e) => {
-                // Αποτρέπει το προεπιλεγμένο prompt
-                e.preventDefault();
-                // Αποθήκευση του event για να χρησιμοποιηθεί αργότερα
-                deferredPrompt = e;
-                // Εμφάνισε το κουμπί
-                installBtn.style.display = 'flex';
-                console.log('beforeinstallprompt event fired');
-            });
-            
-            installBtn.addEventListener('click', async () => {
-                if (!deferredPrompt) return;
-                
-                // Εμφάνισε το installation prompt
-                deferredPrompt.prompt();
-                
-                // Περίμενε την απάντηση του χρήστη
-                const { outcome } = await deferredPrompt.userChoice;
-                
-                if (outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
-                    installBtn.innerHTML = '<i class="fas fa-check"></i> Installed';
-                    installBtn.disabled = true;
-                } else {
-                    console.log('User dismissed the install prompt');
-                }
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+// Αρχικά κρύψε το κουμπί
+installBtn.style.display = 'none';
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Αποτρέπει το προεπιλεγμένο prompt
+    e.preventDefault();
+    // Αποθήκευση του event
+    deferredPrompt = e;
+    // Εμφάνισε το κουμπί
+    installBtn.style.display = 'flex';
+    console.log('beforeinstallprompt event fired');
+    
+    // Προσθήκη animation για να τραβήξει την προσοχή
+    installBtn.classList.add('pulse');
+    setTimeout(() => {
+        installBtn.classList.remove('pulse');
+    }, 3000);
+});
+
+installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) {
+        showNotification('Installation not available', 'info');
+        return;
+    }
+    
+    // Εμφάνισε το installation prompt
+    deferredPrompt.prompt();
+    
+    // Περίμενε την απάντηση του χρήστη
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+        showNotification('App installing...', 'success');
+        installBtn.innerHTML = '<i class="fas fa-check"></i> Installing';
+        installBtn.disabled = true;
+    } else {
+        console.log('User dismissed the install prompt');
+        showNotification('Installation canceled', 'info');
+    }
+    
+    // Καθάρισε το deferredPrompt
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+});
+
+window.addEventListener('appinstalled', () => {
+    console.log('PWA installed');
+    installBtn.style.display = 'none';
+    deferredPrompt = null;
+    showNotification('App installed successfully!', 'success');
+});
+
+// Έλεγχος αν η εφαρμογή είναι ήδη εγκατεστημένη
+window.addEventListener('load', () => {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('Running in standalone mode');
+        installBtn.style.display = 'none';
+    }
+});
                 
                 // Καθάρισε το deferredPrompt
                 deferredPrompt = null;
