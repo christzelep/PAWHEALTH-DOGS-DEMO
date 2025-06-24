@@ -2,7 +2,7 @@
   "name": "PawHealth",
   "short_name": "PawHealth",
   "description": "Premium pet health monitoring app",
-  "start_url": "/?utm_source=pwa",
+ "start_url": "/?utm_source=pwa",
   "display": "standalone",
   "background_color": "#e0f7fa",
   "theme_color": "#4361ee",
