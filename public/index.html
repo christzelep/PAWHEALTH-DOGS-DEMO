@@ -37,20 +37,6 @@
             padding: 20px;
             min-height: 100vh;
             overflow-x: hidden;
-            <script>
-  // Register service worker
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(registration => {
-          console.log('ServiceWorker registered: ', registration);
-        })
-        .catch(registrationError => {
-          console.log('ServiceWorker registration failed: ', registrationError);
-        });
-    });
-  }
-</script>
         }
         
         .container {
@@ -1478,22 +1464,26 @@
             let deferredPrompt;
             const installBtn = document.getElementById('installBtn');
             
+            // Αρχικά κρύψε το κουμπί
+            installBtn.style.display = 'none';
+            
             window.addEventListener('beforeinstallprompt', (e) => {
-                // Prevent the mini-infobar from appearing on mobile
+                // Αποτρέπει το προεπιλεγμένο prompt
                 e.preventDefault();
-                // Stash the event so it can be triggered later
+                // Αποθήκευση του event για να χρησιμοποιηθεί αργότερα
                 deferredPrompt = e;
-                // Show the install button
+                // Εμφάνισε το κουμπί
                 installBtn.style.display = 'flex';
+                console.log('beforeinstallprompt event fired');
             });
             
             installBtn.addEventListener('click', async () => {
                 if (!deferredPrompt) return;
                 
-                // Show the install prompt
+                // Εμφάνισε το installation prompt
                 deferredPrompt.prompt();
                 
-                // Wait for the user to respond to the prompt
+                // Περίμενε την απάντηση του χρήστη
                 const { outcome } = await deferredPrompt.userChoice;
                 
                 if (outcome === 'accepted') {
@@ -1504,7 +1494,13 @@
                     console.log('User dismissed the install prompt');
                 }
                 
-                // We no longer need the prompt. Clear it up.
+                // Καθάρισε το deferredPrompt
+                deferredPrompt = null;
+            });
+            
+            window.addEventListener('appinstalled', () => {
+                console.log('PWA installed');
+                installBtn.style.display = 'none';
                 deferredPrompt = null;
             });
             
@@ -1831,6 +1827,19 @@
                         document.body.removeChild(notification);
                     }, 300);
                 }, 3000);
+            }
+            
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then(registration => {
+                            console.log('ServiceWorker registered: ', registration);
+                        })
+                        .catch(registrationError => {
+                            console.log('ServiceWorker registration failed: ', registrationError);
+                        });
+                });
             }
         });
     </script>
